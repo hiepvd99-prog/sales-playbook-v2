@@ -519,6 +519,8 @@ function App() {
       setToken(json.token);
       setCurrentUser(json.user);
       setLoginForm({ username: '', password: '' });
+      // Show welcome popup on login
+      setTimeout(() => setShowWelcomePopup(true), 600);
     } catch (err) {
       setAuthError(err.message);
     } finally {
