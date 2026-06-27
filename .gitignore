@@ -6,8 +6,7 @@ node_modules/
 # Testing
 /coverage
 
-# Production Build Output
-dist/
+
 
 # Local JSON Database (Sensitive User Data)
 /data/
