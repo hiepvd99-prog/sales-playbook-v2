@@ -650,7 +650,8 @@ app.post('/api/gemini/generate', authenticateToken, async (req, res) => {
       });
       
       if (!response.ok) {
-        throw new Error(`Gemini API returned status ${response.status}`);
+        const errorText = await response.text();
+        throw new Error(`Gemini API returned status ${response.status}: ${errorText}`);
       }
       
       const json = await response.json();
@@ -659,7 +660,7 @@ app.post('/api/gemini/generate', authenticateToken, async (req, res) => {
     } catch (err) {
       console.error(`Attempt ${i+1} failed:`, err.message);
       if (i === delays.length - 1) {
-        return res.status(500).json({ error: 'Failed to communicate with Gemini API: ' + err.message });
+        return res.status(500).json({ error: 'Lỗi API Gemini: ' + err.message });
       }
       await new Promise(r => setTimeout(r, delays[i]));
     }
@@ -710,7 +711,8 @@ app.post('/api/gemini/chat', authenticateToken, async (req, res) => {
       });
 
       if (!response.ok) {
-        throw new Error(`Gemini API returned status ${response.status}`);
+        const errorText = await response.text();
+        throw new Error(`Gemini API returned status ${response.status}: ${errorText}`);
       }
 
       const json = await response.json();
@@ -719,7 +721,7 @@ app.post('/api/gemini/chat', authenticateToken, async (req, res) => {
     } catch (err) {
       console.error(`Attempt ${i+1} failed:`, err.message);
       if (i === delays.length - 1) {
-        return res.status(500).json({ error: 'Failed to communicate with Gemini API: ' + err.message });
+        return res.status(500).json({ error: 'Lỗi API Gemini: ' + err.message });
       }
       await new Promise(r => setTimeout(r, delays[i]));
     }

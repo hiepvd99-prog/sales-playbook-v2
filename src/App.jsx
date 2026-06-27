@@ -1148,7 +1148,7 @@ Ví dụ:
     try {
       const prompt = `Đóng vai một Giám đốc Kinh doanh Bất động sản xuất sắc. Nhân viên của bạn báo cáo một tình huống khách hàng (lead) như sau: "${leadContext}".\nDựa vào 5 kiểu khách hàng (Có kinh nghiệm, Chưa biết gì, Biết nhưng chưa đầu tư, Theo xu hướng, Bị kéo đến), hãy phân tích giúp nhân viên:\n1. Khách này thuộc nhóm nào và trạng thái hiện tại (Lạnh/Ấm/Nóng)?\n2. Gợi ý 2 bước tiếp cận tiếp theo cụ thể.\n3. Gợi ý 2 câu hỏi (hook) để mở khóa nhu cầu của khách hàng này.\nTrình bày cực kỳ ngắn gọn, định dạng rõ ràng, ngôn ngữ mang tính huấn luyện chuyên nghiệp.`;
       const result = await fetchGeminiResponse(prompt); setLeadAnalysis(result.trim());
-    } catch(e) { setLeadAnalysis("Lỗi kết nối AI. Không thể phân tích lúc này."); }
+    } catch(e) { setLeadAnalysis("Lỗi kết nối AI: " + e.message); }
     setIsAnalyzingLead(false);
   };
 
@@ -1157,7 +1157,7 @@ Ví dụ:
     try {
       const prompt = `Đóng vai một chuyên gia huấn luyện Telesale (Sales Trainer). Hãy đọc và nhận xét kịch bản sau của một nhân viên sales mới:\n"${scriptToGrade}"\n\nYêu cầu đánh giá:\n1. Điểm số (1/10) dựa trên độ tự nhiên, hấp dẫn, không giống "đọc vẹt".\n2. Ưu điểm của kịch bản này.\n3. Nhược điểm cần cải thiện (có gây nhàm chán không, có tạo được sự tò mò không).\n4. Viết lại 1 phiên bản tối ưu hơn, "sát thủ" hơn cho kịch bản này.\nTrình bày bằng Markdown rõ ràng, dễ đọc.`;
       const result = await fetchGeminiResponse(prompt); setScriptFeedback(result.trim());
-    } catch(e) { setScriptFeedback("Lỗi kết nối AI. Không thể chấm điểm lúc này."); }
+    } catch(e) { setScriptFeedback("Lỗi kết nối AI: " + e.message); }
     setIsGradingScript(false);
   };
 
@@ -1166,7 +1166,7 @@ Ví dụ:
     try {
       const prompt = `Đóng vai một chuyên viên tư vấn BĐS tinh tế. Dựa trên ghi chú sau cuộc gặp với khách hàng: "${zaloMeetingNotes}". Hãy soạn 1 tin nhắn Zalo chăm sóc (follow-up). Yêu cầu: Ngắn gọn (dưới 80 chữ), thân thiện, KHÔNG nhắc quá nhiều về bán hàng/sản phẩm (không spam), kết thúc bằng một lời chúc hoặc câu hỏi mở nhẹ nhàng, có sử dụng 1-2 emoji phù hợp.`;
       const result = await fetchGeminiResponse(prompt); setZaloDraft(result.trim());
-    } catch(e) { setZaloDraft("Lỗi kết nối AI. Không thể tạo tin nhắn lúc này."); }
+    } catch(e) { setZaloDraft("Lỗi kết nối AI: " + e.message); }
     setIsDraftingZalo(false);
   };
 
@@ -1175,7 +1175,7 @@ Ví dụ:
     try {
       const prompt = `Đóng vai một chuyên gia phân tích thị trường Bất động sản. Khách hàng đang hỏi về khu vực: "${marketLocation}".\nHãy cung cấp một bản tóm tắt cực kỳ sắc bén (dưới 150 chữ) bao gồm:\n1. Đặc điểm kinh tế/hạ tầng nổi bật nhất.\n2. Tiềm năng tăng giá hoặc dòng tiền.\n3. Một "câu chốt" (hook) hấp dẫn để người sales dùng tư vấn cho khách.`;
       const result = await fetchGeminiResponse(prompt); setMarketInsight(result.trim());
-    } catch(e) { setMarketInsight("Lỗi kết nối AI. Không thể phân tích thị trường lúc này."); }
+    } catch(e) { setMarketInsight("Lỗi kết nối AI: " + e.message); }
     setIsAnalyzingMarket(false);
   };
 
@@ -1184,7 +1184,7 @@ Ví dụ:
     try {
       const prompt = `Đóng vai "Sát thủ chốt sale". Khách hàng BĐS đang có các tín hiệu sẵn sàng mua sau đây:\n${selectedSignals.map(s => "- " + s).join('\n')}\n\nHãy gợi ý:\n1. Đánh giá mức độ "chín muồi" của khách hàng (%).\n2. Đề xuất chiến thuật chốt sale phù hợp nhất ngay lúc này (chốt giả định, chốt khan hiếm, hay chốt lợi ích?).\n3. Viết 1 câu thoại trực tiếp để "đẩy thuyền" chốt cọc ngay bây giờ mà không bị thô.\nTrình bày ngắn gọn, rõ ràng.`;
       const result = await fetchGeminiResponse(prompt); setClosingAdvice(result.trim());
-    } catch(e) { setClosingAdvice("Lỗi kết nối AI. Không thể cố vấn lúc này."); }
+    } catch(e) { setClosingAdvice("Lỗi kết nối AI: " + e.message); }
     setIsAdvisingClose(false);
   };
 
@@ -1197,7 +1197,7 @@ Ví dụ:
     try {
       const prompt = `Đóng vai Giám đốc Chiến lược Bất động sản. Hãy phân tích so sánh nhanh giữa dự án của tôi bán: "${myProject}" và dự án đối thủ: "${competitorProject}". Trình bày siêu ngắn gọn:\n1. Ưu thế cốt lõi của bên mình so với đối thủ.\n2. Điểm yếu của đối thủ mà sale có thể khai thác khéo léo.\n3. Viết 1 câu thoại xử lý từ chối khi khách hàng nói "Bên ${competitorProject} giá rẻ hơn/tốt hơn".`;
       const result = await fetchGeminiResponse(prompt); setBattlecardResult(result.trim());
-    } catch(e) { setBattlecardResult("Lỗi kết nối AI. Không thể phân tích đối thủ."); }
+    } catch(e) { setBattlecardResult("Lỗi kết nối AI: " + e.message); }
     setIsGeneratingBattlecard(false);
   };
 
@@ -1206,7 +1206,7 @@ Ví dụ:
     try {
       const prompt = `Đóng vai Trợ lý hành chính nhập liệu CRM. Dựa trên các ghi chép lộn xộn và vội vàng sau khi gọi cho khách hàng: "${rawCallNotes}".\nHãy chuẩn hóa thành một ghi chú CRM chuyên nghiệp, rõ ràng theo các mục sau (dùng gạch đầu dòng):\n- Thông tin & Nhu cầu cốt lõi\n- Tình trạng tài chính\n- Điểm nghẽn / Lo ngại\n- Bước tiếp theo (Next step)`;
       const result = await fetchGeminiResponse(prompt); setCrmSummary(result.trim());
-    } catch(e) { setCrmSummary("Lỗi kết nối AI. Không thể tóm tắt."); }
+    } catch(e) { setCrmSummary("Lỗi kết nối AI: " + e.message); }
     setIsSummarizingCall(false);
   };
 
@@ -1215,7 +1215,7 @@ Ví dụ:
     try {
       const prompt = `Đóng vai một Giám đốc Kinh doanh cấp cao huấn luyện nhân viên. Nhân viên sales vừa báo cáo kết quả một thương vụ: [Trạng thái: ${dealOutcome === 'won' ? 'Thắng (Chốt thành công)' : 'Thua (Rớt khách)'}] - Tình huống: "${dealContext}".\nHãy phân tích (Deal Autopsy) cực kỳ ngắn gọn và sắc bén:\n1. Nguyên nhân cốt lõi dẫn đến kết quả này (nhìn xuyên qua bề nổi).\n2. Bài học xương máu rút ra cho các thương vụ tiếp theo.\nTrình bày dễ đọc, dùng ngôn từ thực chiến BĐS.`;
       const result = await fetchGeminiResponse(prompt); setDealAutopsyResult(result.trim());
-    } catch(e) { setDealAutopsyResult("Lỗi kết nối AI. Không thể phân tích thương vụ."); }
+    } catch(e) { setDealAutopsyResult("Lỗi kết nối AI: " + e.message); }
     setIsAutopsying(false);
   };
 
@@ -1224,7 +1224,7 @@ Ví dụ:
     try {
       const prompt = `Đóng vai một bậc thầy giao tiếp và bán hàng. Dựa trên thông tin/ngoại hình/nghề nghiệp của khách hàng sau: "${clientProfile}".\nHãy gợi ý:\n1. 3 câu nói mở đầu (icebreaker) để "phá băng", khen ngợi tinh tế hoặc bắt chuyện tự nhiên nhất khi vừa gặp mặt (không sáo rỗng, không nịnh nọt lố bịch).\n2. 1 chủ đề "nhạy cảm" tuyệt đối nên tránh nói với kiểu người này.\nViết ngắn gọn, trực diện.`;
       const result = await fetchGeminiResponse(prompt); setIcebreakerResult(result.trim());
-    } catch(e) { setIcebreakerResult("Lỗi kết nối AI. Không thể tạo câu mở lời."); }
+    } catch(e) { setIcebreakerResult("Lỗi kết nối AI: " + e.message); }
     setIsGeneratingIcebreaker(false);
   };
 
@@ -1233,7 +1233,7 @@ Ví dụ:
     try {
       const prompt = `Đóng vai chuyên gia chăm sóc khách hàng Bất động sản. Khách hàng cũ của tôi có tình trạng: "${referralClientContext}".\nHãy viết 1 kịch bản nhắn tin hoặc gọi điện thật tinh tế để "xin lời giới thiệu" (referral) bạn bè/người thân của họ mua dự án mới.\nYêu cầu: Khéo léo, chân thành, tự nhiên, tuyệt đối không gây áp lực hoặc làm khách thấy phiền. Nêu rõ lợi ích (nếu có) khi họ giới thiệu.`;
       const result = await fetchGeminiResponse(prompt); setReferralScript(result.trim());
-    } catch(e) { setReferralScript("Lỗi kết nối AI. Không thể tạo kịch bản."); }
+    } catch(e) { setReferralScript("Lỗi kết nối AI: " + e.message); }
     setIsGeneratingReferral(false);
   };
 
@@ -1242,7 +1242,7 @@ Ví dụ:
     try {
       const prompt = `Đóng vai Giám đốc Kinh doanh (Sales Manager) dày dặn kinh nghiệm, thấu hiểu tâm lý. Nhân viên sales của bạn đang gặp vấn đề: "${salesMood}".\nHãy đưa ra một lời khuyên (dưới 150 chữ) để xốc lại tinh thần mạnh mẽ, truyền lửa.\nĐồng thời, giao đúng 1 "hành động nhỏ bé" (micro-action) để họ làm ngay lập tức nhằm thoát khỏi sự chán nản/bế tắc này.\nViết trực diện, thực chiến, không lý thuyết suông.`;
       const result = await fetchGeminiResponse(prompt); setMotivationDose(result.trim());
-    } catch(e) { setMotivationDose("Lỗi kết nối AI. Không thể phân tích tâm lý lúc này."); }
+    } catch(e) { setMotivationDose("Lỗi kết nối AI: " + e.message); }
     setIsCoachingMood(false);
   };
 
@@ -1251,7 +1251,7 @@ Ví dụ:
     try {
       const prompt = `Đóng vai một chuyên gia Marketing Bất động sản và Xây dựng thương hiệu cá nhân. Hãy viết một bài đăng mạng xã hội (Facebook/Zalo) cho một môi giới dựa trên sự kiện/chủ đề: "${socialTopic}". Yêu cầu: Văn phong chuyên nghiệp nhưng gần gũi, có câu tiêu đề (hook) thu hút, nội dung chia sẻ giá trị chứ không chỉ chăm chăm bán hàng, kèm biểu tượng cảm xúc (emoji) phù hợp và 3-5 hashtag. Độ dài khoảng 150-250 chữ.`;
       const result = await fetchGeminiResponse(prompt); setSocialPostResult(result.trim());
-    } catch(e) { setSocialPostResult("Lỗi kết nối AI. Không thể tạo bài viết lúc này."); }
+    } catch(e) { setSocialPostResult("Lỗi kết nối AI: " + e.message); }
     setIsGeneratingSocial(false);
   };
 
@@ -1260,7 +1260,7 @@ Ví dụ:
     try {
       const prompt = `Đóng vai Giám đốc Kinh doanh Bất động sản. Một nhân viên báo cáo tình trạng khách hàng sau buổi gặp/gọi: "${followUpContext}". Khách hàng chưa chốt và cần bám đuổi (follow-up). Hãy lập một chiến dịch bám đuổi tinh tế gồm 3 "điểm chạm" trong 10 ngày tới. Trình bày theo format:\n- Điểm chạm 1 (Ngày X): Kênh liên lạc + Nội dung/Giá trị trao đi (Tuyệt đối không hối thúc mua).\n- Điểm chạm 2 (Ngày Y): Kênh liên lạc + Nội dung/Giá trị trao đi.\n- Điểm chạm 3 (Ngày Z): Kênh liên lạc + Câu hỏi chốt khéo léo (Call to action).\nViết cực kỳ ngắn gọn, thực chiến.`;
       const result = await fetchGeminiResponse(prompt); setFollowUpPlanResult(result.trim());
-    } catch(e) { setFollowUpPlanResult("Lỗi kết nối AI. Không thể lập kế hoạch lúc này."); }
+    } catch(e) { setFollowUpPlanResult("Lỗi kết nối AI: " + e.message); }
     setIsPlanningFollowUp(false);
   };
 
@@ -1269,7 +1269,7 @@ Ví dụ:
     try {
       const prompt = `Đóng vai chuyên gia Tâm lý học hành vi khách hàng Bất động sản. Dựa trên thông tin cơ bản: "${personaContext}". Hãy phác họa Bản đồ Thấu cảm (Empathy Map) nhanh gọn:\n1. Nỗi sợ hãi/Lo lắng thầm kín nhất (Pain points).\n2. Khát khao/Kỳ vọng thực sự (không chỉ là mua nhà mà là giá trị phía sau).\n3. Gợi ý 2 câu hỏi "tử huyệt" để chạm đúng vào cảm xúc của họ.\nTrình bày cực kỳ sắc bén, đi thẳng vào vấn đề tâm lý.`;
       const result = await fetchGeminiResponse(prompt); setPersonaMapResult(result.trim());
-    } catch(e) { setPersonaMapResult("Lỗi kết nối AI. Không thể phác họa tâm lý lúc này."); }
+    } catch(e) { setPersonaMapResult("Lỗi kết nối AI: " + e.message); }
     setIsMappingPersona(false);
   };
 
@@ -1278,7 +1278,7 @@ Ví dụ:
     try {
       const prompt = `Đóng vai Chuyên gia Đàm phán Bất động sản. Khách hàng đang đưa ra yêu cầu/đòi hỏi cứng rắn: "${negotiationDemand}". Hãy lên chiến thuật đàm phán Win-Win:\n1. Đọc vị tâm lý (Vì sao họ đòi hỏi thế này? Họ đang thử hay thực sự cần?).\n2. Chiến thuật Give-Get (Nếu sales nhượng bộ thì sales phải đưa ra điều kiện đánh đổi gì để không bị lép vế?).\n3. Mẫu câu thoại phản hồi khéo léo, giữ vững giá trị sản phẩm mà không làm mất lòng khách.\nViết ngắn gọn, chuyên nghiệp, dễ áp dụng ngay.`;
       const result = await fetchGeminiResponse(prompt); setNegotiationStrategyResult(result.trim());
-    } catch(e) { setNegotiationStrategyResult("Lỗi kết nối AI. Không thể lập chiến thuật đàm phán."); }
+    } catch(e) { setNegotiationStrategyResult("Lỗi kết nối AI: " + e.message); }
     setIsStrategizingNegotiation(false);
   };
 
