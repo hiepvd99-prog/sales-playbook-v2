@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: sales-playbook-saas
+    runtime: node
+    region: singapore
+    branch: master
+    buildCommand: npm install && npm run build
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: JWT_SECRET
+        value: salesplaybook_jwt_secret_2024_vdh
