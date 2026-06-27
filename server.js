@@ -741,5 +741,7 @@ app.listen(PORT, () => {
   console.log(`==================================================`);
   console.log(`  Sales Playbook Backend Server is running on:`);
   console.log(`  http://localhost:${PORT}`);
+  console.log(`  GEMINI_API_KEY: ${process.env.GEMINI_API_KEY ? 'CONFIGURED (' + process.env.GEMINI_API_KEY.substring(0,8) + '...)' : '❌ NOT SET'}`);
+  console.log(`  NODE_ENV: ${process.env.NODE_ENV || 'not set'}`);
   console.log(`==================================================`);
 });
