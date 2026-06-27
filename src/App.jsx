@@ -1076,16 +1076,17 @@ Ví dụ:
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Calls the Backend Server Proxy for general text generation
-  const fetchGeminiResponse = async (prompt) => {
+  // Calls the Backend Server Proxy for general text generation.
+  // model: 'flash' (mặc định, nhanh/rẻ) hoặc 'pro' (phân tích/chiến lược, chất lượng cao).
+  const fetchGeminiResponse = async (prompt, model = 'flash') => {
     try {
       const res = await fetch('/api/gemini/generate', {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ prompt })
+        body: JSON.stringify({ prompt, model })
       });
       if (!res.ok) {
         const errData = await res.json();
@@ -1099,15 +1100,15 @@ Ví dụ:
   };
 
   // Calls the Backend Server Proxy for roleplay chatting
-  const fetchGeminiChat = async (systemPrompt, history) => {
+  const fetchGeminiChat = async (systemPrompt, history, model = 'flash') => {
     try {
       const res = await fetch('/api/gemini/chat', {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ systemPrompt, history })
+        body: JSON.stringify({ systemPrompt, history, model })
       });
       if (!res.ok) {
         const errData = await res.json();
@@ -1125,7 +1126,7 @@ Ví dụ:
     setAiError(''); setIsGenerating(true);
     try {
       const prompt = `Viết một kịch bản telesale gọi lạnh (cold call) ngắn gọn, tự nhiên, chuyên nghiệp. Dự án/Sản phẩm: ${aiForm.project}\nĐiểm nổi bật: ${aiForm.highlights || 'Không rõ'}\nĐối tượng KH: ${aiForm.customer || 'Chung chung'}\nChỉ xuất ra nội dung kịch bản đóng vai người sale nói với khách, không cần giải thích hay dạo đầu. Thêm lời chào và kết thúc mở để tương tác.`;
-      const result = await fetchGeminiResponse(prompt);
+      const result = await fetchGeminiResponse(prompt, 'pro');
       const newScript = { id: Date.now(), title: `Kịch bản AI: ${aiForm.project}`, script: result.trim() };
       const newData = { ...data }; newData.quyTrinh.telesale.push(newScript); setData(newData);
       setShowAIModal(false); setAiForm({ project: '', highlights: '', customer: '' });
@@ -1147,7 +1148,7 @@ Ví dụ:
     if (!leadContext.trim()) return; setIsAnalyzingLead(true);
     try {
       const prompt = `Đóng vai một Giám đốc Kinh doanh Bất động sản xuất sắc. Nhân viên của bạn báo cáo một tình huống khách hàng (lead) như sau: "${leadContext}".\nDựa vào 5 kiểu khách hàng (Có kinh nghiệm, Chưa biết gì, Biết nhưng chưa đầu tư, Theo xu hướng, Bị kéo đến), hãy phân tích giúp nhân viên:\n1. Khách này thuộc nhóm nào và trạng thái hiện tại (Lạnh/Ấm/Nóng)?\n2. Gợi ý 2 bước tiếp cận tiếp theo cụ thể.\n3. Gợi ý 2 câu hỏi (hook) để mở khóa nhu cầu của khách hàng này.\nTrình bày cực kỳ ngắn gọn, định dạng rõ ràng, ngôn ngữ mang tính huấn luyện chuyên nghiệp.`;
-      const result = await fetchGeminiResponse(prompt); setLeadAnalysis(result.trim());
+      const result = await fetchGeminiResponse(prompt, 'pro'); setLeadAnalysis(result.trim());
     } catch(e) { setLeadAnalysis("Lỗi kết nối AI: " + e.message); }
     setIsAnalyzingLead(false);
   };
@@ -1156,7 +1157,7 @@ Ví dụ:
     if (!scriptToGrade.trim()) return; setIsGradingScript(true);
     try {
       const prompt = `Đóng vai một chuyên gia huấn luyện Telesale (Sales Trainer). Hãy đọc và nhận xét kịch bản sau của một nhân viên sales mới:\n"${scriptToGrade}"\n\nYêu cầu đánh giá:\n1. Điểm số (1/10) dựa trên độ tự nhiên, hấp dẫn, không giống "đọc vẹt".\n2. Ưu điểm của kịch bản này.\n3. Nhược điểm cần cải thiện (có gây nhàm chán không, có tạo được sự tò mò không).\n4. Viết lại 1 phiên bản tối ưu hơn, "sát thủ" hơn cho kịch bản này.\nTrình bày bằng Markdown rõ ràng, dễ đọc.`;
-      const result = await fetchGeminiResponse(prompt); setScriptFeedback(result.trim());
+      const result = await fetchGeminiResponse(prompt, 'pro'); setScriptFeedback(result.trim());
     } catch(e) { setScriptFeedback("Lỗi kết nối AI: " + e.message); }
     setIsGradingScript(false);
   };
@@ -1174,7 +1175,7 @@ Ví dụ:
     if (!marketLocation.trim()) return; setIsAnalyzingMarket(true);
     try {
       const prompt = `Đóng vai một chuyên gia phân tích thị trường Bất động sản. Khách hàng đang hỏi về khu vực: "${marketLocation}".\nHãy cung cấp một bản tóm tắt cực kỳ sắc bén (dưới 150 chữ) bao gồm:\n1. Đặc điểm kinh tế/hạ tầng nổi bật nhất.\n2. Tiềm năng tăng giá hoặc dòng tiền.\n3. Một "câu chốt" (hook) hấp dẫn để người sales dùng tư vấn cho khách.`;
-      const result = await fetchGeminiResponse(prompt); setMarketInsight(result.trim());
+      const result = await fetchGeminiResponse(prompt, 'pro'); setMarketInsight(result.trim());
     } catch(e) { setMarketInsight("Lỗi kết nối AI: " + e.message); }
     setIsAnalyzingMarket(false);
   };
@@ -1183,7 +1184,7 @@ Ví dụ:
     if (selectedSignals.length === 0) return; setIsAdvisingClose(true);
     try {
       const prompt = `Đóng vai "Sát thủ chốt sale". Khách hàng BĐS đang có các tín hiệu sẵn sàng mua sau đây:\n${selectedSignals.map(s => "- " + s).join('\n')}\n\nHãy gợi ý:\n1. Đánh giá mức độ "chín muồi" của khách hàng (%).\n2. Đề xuất chiến thuật chốt sale phù hợp nhất ngay lúc này (chốt giả định, chốt khan hiếm, hay chốt lợi ích?).\n3. Viết 1 câu thoại trực tiếp để "đẩy thuyền" chốt cọc ngay bây giờ mà không bị thô.\nTrình bày ngắn gọn, rõ ràng.`;
-      const result = await fetchGeminiResponse(prompt); setClosingAdvice(result.trim());
+      const result = await fetchGeminiResponse(prompt, 'pro'); setClosingAdvice(result.trim());
     } catch(e) { setClosingAdvice("Lỗi kết nối AI: " + e.message); }
     setIsAdvisingClose(false);
   };
@@ -1196,7 +1197,7 @@ Ví dụ:
     if (!myProject.trim() || !competitorProject.trim()) return; setIsGeneratingBattlecard(true);
     try {
       const prompt = `Đóng vai Giám đốc Chiến lược Bất động sản. Hãy phân tích so sánh nhanh giữa dự án của tôi bán: "${myProject}" và dự án đối thủ: "${competitorProject}". Trình bày siêu ngắn gọn:\n1. Ưu thế cốt lõi của bên mình so với đối thủ.\n2. Điểm yếu của đối thủ mà sale có thể khai thác khéo léo.\n3. Viết 1 câu thoại xử lý từ chối khi khách hàng nói "Bên ${competitorProject} giá rẻ hơn/tốt hơn".`;
-      const result = await fetchGeminiResponse(prompt); setBattlecardResult(result.trim());
+      const result = await fetchGeminiResponse(prompt, 'pro'); setBattlecardResult(result.trim());
     } catch(e) { setBattlecardResult("Lỗi kết nối AI: " + e.message); }
     setIsGeneratingBattlecard(false);
   };
@@ -1205,7 +1206,7 @@ Ví dụ:
     if (!rawCallNotes.trim()) return; setIsSummarizingCall(true);
     try {
       const prompt = `Đóng vai Trợ lý hành chính nhập liệu CRM. Dựa trên các ghi chép lộn xộn và vội vàng sau khi gọi cho khách hàng: "${rawCallNotes}".\nHãy chuẩn hóa thành một ghi chú CRM chuyên nghiệp, rõ ràng theo các mục sau (dùng gạch đầu dòng):\n- Thông tin & Nhu cầu cốt lõi\n- Tình trạng tài chính\n- Điểm nghẽn / Lo ngại\n- Bước tiếp theo (Next step)`;
-      const result = await fetchGeminiResponse(prompt); setCrmSummary(result.trim());
+      const result = await fetchGeminiResponse(prompt, 'pro'); setCrmSummary(result.trim());
     } catch(e) { setCrmSummary("Lỗi kết nối AI: " + e.message); }
     setIsSummarizingCall(false);
   };
@@ -1214,7 +1215,7 @@ Ví dụ:
     if (!dealContext.trim()) return; setIsAutopsying(true);
     try {
       const prompt = `Đóng vai một Giám đốc Kinh doanh cấp cao huấn luyện nhân viên. Nhân viên sales vừa báo cáo kết quả một thương vụ: [Trạng thái: ${dealOutcome === 'won' ? 'Thắng (Chốt thành công)' : 'Thua (Rớt khách)'}] - Tình huống: "${dealContext}".\nHãy phân tích (Deal Autopsy) cực kỳ ngắn gọn và sắc bén:\n1. Nguyên nhân cốt lõi dẫn đến kết quả này (nhìn xuyên qua bề nổi).\n2. Bài học xương máu rút ra cho các thương vụ tiếp theo.\nTrình bày dễ đọc, dùng ngôn từ thực chiến BĐS.`;
-      const result = await fetchGeminiResponse(prompt); setDealAutopsyResult(result.trim());
+      const result = await fetchGeminiResponse(prompt, 'pro'); setDealAutopsyResult(result.trim());
     } catch(e) { setDealAutopsyResult("Lỗi kết nối AI: " + e.message); }
     setIsAutopsying(false);
   };
@@ -1250,7 +1251,7 @@ Ví dụ:
     if (!socialTopic.trim()) return; setIsGeneratingSocial(true);
     try {
       const prompt = `Đóng vai một chuyên gia Marketing Bất động sản và Xây dựng thương hiệu cá nhân. Hãy viết một bài đăng mạng xã hội (Facebook/Zalo) cho một môi giới dựa trên sự kiện/chủ đề: "${socialTopic}". Yêu cầu: Văn phong chuyên nghiệp nhưng gần gũi, có câu tiêu đề (hook) thu hút, nội dung chia sẻ giá trị chứ không chỉ chăm chăm bán hàng, kèm biểu tượng cảm xúc (emoji) phù hợp và 3-5 hashtag. Độ dài khoảng 150-250 chữ.`;
-      const result = await fetchGeminiResponse(prompt); setSocialPostResult(result.trim());
+      const result = await fetchGeminiResponse(prompt, 'pro'); setSocialPostResult(result.trim());
     } catch(e) { setSocialPostResult("Lỗi kết nối AI: " + e.message); }
     setIsGeneratingSocial(false);
   };
@@ -1259,7 +1260,7 @@ Ví dụ:
     if (!followUpContext.trim()) return; setIsPlanningFollowUp(true);
     try {
       const prompt = `Đóng vai Giám đốc Kinh doanh Bất động sản. Một nhân viên báo cáo tình trạng khách hàng sau buổi gặp/gọi: "${followUpContext}". Khách hàng chưa chốt và cần bám đuổi (follow-up). Hãy lập một chiến dịch bám đuổi tinh tế gồm 3 "điểm chạm" trong 10 ngày tới. Trình bày theo format:\n- Điểm chạm 1 (Ngày X): Kênh liên lạc + Nội dung/Giá trị trao đi (Tuyệt đối không hối thúc mua).\n- Điểm chạm 2 (Ngày Y): Kênh liên lạc + Nội dung/Giá trị trao đi.\n- Điểm chạm 3 (Ngày Z): Kênh liên lạc + Câu hỏi chốt khéo léo (Call to action).\nViết cực kỳ ngắn gọn, thực chiến.`;
-      const result = await fetchGeminiResponse(prompt); setFollowUpPlanResult(result.trim());
+      const result = await fetchGeminiResponse(prompt, 'pro'); setFollowUpPlanResult(result.trim());
     } catch(e) { setFollowUpPlanResult("Lỗi kết nối AI: " + e.message); }
     setIsPlanningFollowUp(false);
   };
@@ -1268,7 +1269,7 @@ Ví dụ:
     if (!personaContext.trim()) return; setIsMappingPersona(true);
     try {
       const prompt = `Đóng vai chuyên gia Tâm lý học hành vi khách hàng Bất động sản. Dựa trên thông tin cơ bản: "${personaContext}". Hãy phác họa Bản đồ Thấu cảm (Empathy Map) nhanh gọn:\n1. Nỗi sợ hãi/Lo lắng thầm kín nhất (Pain points).\n2. Khát khao/Kỳ vọng thực sự (không chỉ là mua nhà mà là giá trị phía sau).\n3. Gợi ý 2 câu hỏi "tử huyệt" để chạm đúng vào cảm xúc của họ.\nTrình bày cực kỳ sắc bén, đi thẳng vào vấn đề tâm lý.`;
-      const result = await fetchGeminiResponse(prompt); setPersonaMapResult(result.trim());
+      const result = await fetchGeminiResponse(prompt, 'pro'); setPersonaMapResult(result.trim());
     } catch(e) { setPersonaMapResult("Lỗi kết nối AI: " + e.message); }
     setIsMappingPersona(false);
   };
@@ -1277,7 +1278,7 @@ Ví dụ:
     if (!negotiationDemand.trim()) return; setIsStrategizingNegotiation(true);
     try {
       const prompt = `Đóng vai Chuyên gia Đàm phán Bất động sản. Khách hàng đang đưa ra yêu cầu/đòi hỏi cứng rắn: "${negotiationDemand}". Hãy lên chiến thuật đàm phán Win-Win:\n1. Đọc vị tâm lý (Vì sao họ đòi hỏi thế này? Họ đang thử hay thực sự cần?).\n2. Chiến thuật Give-Get (Nếu sales nhượng bộ thì sales phải đưa ra điều kiện đánh đổi gì để không bị lép vế?).\n3. Mẫu câu thoại phản hồi khéo léo, giữ vững giá trị sản phẩm mà không làm mất lòng khách.\nViết ngắn gọn, chuyên nghiệp, dễ áp dụng ngay.`;
-      const result = await fetchGeminiResponse(prompt); setNegotiationStrategyResult(result.trim());
+      const result = await fetchGeminiResponse(prompt, 'pro'); setNegotiationStrategyResult(result.trim());
     } catch(e) { setNegotiationStrategyResult("Lỗi kết nối AI: " + e.message); }
     setIsStrategizingNegotiation(false);
   };
@@ -1334,19 +1335,65 @@ Ví dụ:
     );
   };
 
+  // Render inline Markdown: **đậm**, *nghiêng*/_nghiêng_, `code`. Màu chữ kế thừa từ thẻ cha.
+  const renderInline = (str) => {
+    const nodes = [];
+    let remaining = String(str);
+    let key = 0;
+    const regex = /(\*\*([^*]+)\*\*|`([^`]+)`|\*([^*\s][^*]*?)\*|_([^_\s][^_]*?)_)/;
+    let m;
+    while ((m = regex.exec(remaining)) !== null) {
+      if (m.index > 0) nodes.push(remaining.slice(0, m.index));
+      if (m[2] !== undefined) nodes.push(<strong key={key++} style={{fontWeight:700}}>{m[2]}</strong>);
+      else if (m[3] !== undefined) nodes.push(<code key={key++} style={{padding:'1px 5px',borderRadius:4,background:'rgba(120,120,120,0.18)',fontFamily:'monospace',fontSize:'0.88em'}}>{m[3]}</code>);
+      else if (m[4] !== undefined) nodes.push(<em key={key++}>{m[4]}</em>);
+      else if (m[5] !== undefined) nodes.push(<em key={key++}>{m[5]}</em>);
+      remaining = remaining.slice(m.index + m[0].length);
+    }
+    if (remaining) nodes.push(remaining);
+    return nodes;
+  };
+
+  // Render block Markdown: tiêu đề (#), gạch đầu dòng (- * •), danh sách số (1.), in đậm, đoạn văn.
+  // Dùng chung cho mọi khung kết quả AI; kế thừa màu chữ của thẻ cha nên hợp cả nền sáng lẫn tối.
+  const MarkdownText = ({ text, className = '' }) => {
+    if (!text) return null;
+    const lines = String(text).split('\n');
+    const blocks = [];
+    let listItems = null, listType = null;
+    const flushList = (k) => {
+      if (listItems) {
+        blocks.push(listType === 'ol'
+          ? <ol key={'l' + k} style={{listStyle:'decimal',marginLeft:20,marginTop:6,marginBottom:6}}>{listItems}</ol>
+          : <ul key={'l' + k} style={{listStyle:'disc',marginLeft:20,marginTop:6,marginBottom:6}}>{listItems}</ul>);
+        listItems = null; listType = null;
+      }
+    };
+    lines.forEach((line, i) => {
+      const t = line.trim();
+      const h = t.match(/^(#{1,6})\s+(.*)$/);
+      const bullet = t.match(/^[-*•]\s+(.*)$/);
+      const numbered = t.match(/^(\d+)[.)]\s+(.*)$/);
+      if (h) { flushList(i); blocks.push(<p key={i} style={{fontWeight:700,fontSize:h[1].length<=2?'1.05em':'1em',marginTop:12,marginBottom:4}}>{renderInline(h[2])}</p>); return; }
+      if (bullet) { if (listType !== 'ul') { flushList(i); listItems = []; listType = 'ul'; } listItems.push(<li key={i} style={{marginBottom:4}}>{renderInline(bullet[1])}</li>); return; }
+      if (numbered) { if (listType !== 'ol') { flushList(i); listItems = []; listType = 'ol'; } listItems.push(<li key={i} style={{marginBottom:4}}>{renderInline(numbered[2])}</li>); return; }
+      flushList(i);
+      if (t === '') { blocks.push(<div key={i} style={{height:8}} />); return; }
+      blocks.push(<p key={i} style={{marginBottom:6,lineHeight:1.7}}>{renderInline(line)}</p>);
+    });
+    flushList('end');
+    return <div className={className}>{blocks}</div>;
+  };
+
   const AiResultBox = ({ result }) => (
     <div style={{marginTop:20,padding:20,borderRadius:12,border:'1px solid rgba(99,102,241,0.25)',background:'rgba(10,8,36,0.55)',backdropFilter:'blur(8px)',color:'#e2e8f0',fontSize:'13.5px',lineHeight:1.7,boxShadow:'inset 0 1px 0 rgba(255,255,255,0.04),0 4px 24px rgba(0,0,0,0.3)'}}>
       <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:12,paddingBottom:10,borderBottom:'1px solid rgba(99,102,241,0.18)'}}>
         <Sparkles style={{width:13,height:13,color:'#818cf8',flexShrink:0}}/>
         <span style={{fontSize:'10px',fontWeight:700,letterSpacing:'2px',textTransform:'uppercase',color:'rgba(129,140,248,0.8)'}}>Phản hồi từ VĐH AI</span>
       </div>
-      {result.split('\n').map((line, i) => {
-        const clean = line.replace(/\*\*/g, '').replace(/^#+\s*/, '');
-        if (line.match(/^\*\*/) || line.match(/^#+/)) return <p key={i} style={{fontWeight:700,color:'#a5b4fc',marginTop:12,marginBottom:4}}>{clean}</p>;
-        if (line.startsWith('- ')) return <li key={i} style={{marginLeft:16,marginBottom:4,color:'#cbd5e1'}}>{line.substring(2)}</li>;
-        if (line.trim() === '') return <br key={i} />;
-        return <p key={i} style={{marginBottom:6,color:'#cbd5e1'}}>{line}</p>;
-      })}
+      <div style={{color:'#cbd5e1'}}>
+        <MarkdownText text={result} />
+      </div>
     </div>
   );
 
@@ -3906,7 +3953,7 @@ Ví dụ:
         {zaloDraft && (
           <div className="mt-4 p-4 bg-white rounded-lg border border-sky-200 text-sm text-gray-800 shadow-sm relative group">
             <button onClick={() => copyToClipboard(zaloDraft)} className="absolute top-2 right-2 text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 py-1 px-2 rounded">Copy</button>
-            <div className="whitespace-pre-wrap pr-12">{zaloDraft}</div>
+            <MarkdownText text={zaloDraft} className="pr-12" />
           </div>
         )}
       </section>
@@ -4042,7 +4089,7 @@ Ví dụ:
         {socialPostResult && (
           <div className="mt-4 p-4 bg-white rounded-lg border border-pink-200 text-sm text-gray-800 shadow-sm relative group">
             <button onClick={() => copyToClipboard(socialPostResult)} className="absolute top-2 right-2 text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 py-1 px-2 rounded">Copy</button>
-            <div className="whitespace-pre-wrap pr-12">{socialPostResult}</div>
+            <MarkdownText text={socialPostResult} className="pr-12" />
           </div>
         )}
       </section>
@@ -4092,9 +4139,9 @@ Ví dụ:
           </button>
         </div>
         {leadAnalysis && (
-          <div className="mt-4 p-4 bg-white rounded-lg border border-purple-200 text-sm text-gray-800 whitespace-pre-wrap leading-relaxed shadow-inner">
+          <div className="mt-4 p-4 bg-white rounded-lg border border-purple-200 text-sm text-gray-800 leading-relaxed shadow-inner">
             <div className="font-bold text-purple-800 mb-2 flex items-center"><MessageSquareQuote className="mr-2" style={{width:16,height:16}}/> Nhận định từ Giám đốc AI:</div>
-            {leadAnalysis}
+            <MarkdownText text={leadAnalysis} />
           </div>
         )}
       </section>
@@ -4116,7 +4163,7 @@ Ví dụ:
               {aiResponses[idx] && (
                 <div className="mt-3 pt-3 border-t border-red-200 text-sm text-purple-900 bg-purple-100/50 p-3 rounded-md">
                   <span className="font-bold flex items-center mb-1 text-purple-700"><Wand2 className="mr-1" style={{width:12,height:12}}/> Gợi ý từ chuyên gia AI:</span>
-                  <p className="italic leading-relaxed">"{aiResponses[idx]}"</p>
+                  <p className="italic leading-relaxed">"{renderInline(aiResponses[idx])}"</p>
                 </div>
               )}
             </div>
@@ -4169,9 +4216,9 @@ Ví dụ:
           </button>
         </div>
         {marketInsight && (
-          <div className="mt-4 p-4 bg-white rounded-lg border border-amber-200 text-sm text-gray-800 whitespace-pre-wrap leading-relaxed shadow-inner">
+          <div className="mt-4 p-4 bg-white rounded-lg border border-amber-200 text-sm text-gray-800 leading-relaxed shadow-inner">
             <div className="font-bold text-amber-800 mb-2 flex items-center"><MessageSquareQuote className="mr-2" style={{width:16,height:16}}/> Điểm tin thị trường từ AI:</div>
-            {marketInsight}
+            <MarkdownText text={marketInsight} />
           </div>
         )}
       </section>
@@ -4191,13 +4238,7 @@ Ví dụ:
         </div>
         {battlecardResult && (
           <div className="mt-5 p-5 bg-slate-900 rounded-lg border border-slate-700 text-sm text-slate-200 shadow-inner">
-            {battlecardResult.split('\n').map((line, i) => {
-              const clean = line.replace(/\*\*/g,'').replace(/^#+\s*/,'');
-              if (line.match(/^\*\*/) || line.match(/^#+/)) return <p key={i} className="font-bold text-blue-400 mt-3 mb-1">{clean}</p>;
-              if (line.startsWith('- ')) return <li key={i} className="ml-4 mb-1">{line.substring(2)}</li>;
-              if (line.trim() === '') return <br key={i} />;
-              return <p key={i} className="mb-2 leading-relaxed">{line}</p>;
-            })}
+            <MarkdownText text={battlecardResult} />
           </div>
         )}
       </section>

@@ -617,6 +617,35 @@ app.get('/api/news', authenticateToken, async (req, res) => {
   res.json(result);
 });
 
+// Map a short model alias from the client to a real Gemini model id.
+// Same GEMINI_API_KEY works for all models; only the model in the URL changes.
+const GEMINI_MODELS = {
+  flash: 'gemini-2.5-flash', // nhanh, rẻ — tác vụ ngắn (đối thoại, tin Zalo, JSON)
+  pro: 'gemini-2.5-pro'      // thông minh hơn — phân tích, chiến lược, viết kịch bản
+};
+function resolveGeminiModel(alias) {
+  return GEMINI_MODELS[alias] || GEMINI_MODELS.flash;
+}
+
+// Thứ tự model để thử lần lượt qua các lần retry.
+// Nếu yêu cầu 'pro' nhưng key chưa bật billing (Pro bị chặn trên gói free -> lỗi 429),
+// tự động hạ xuống 'flash' để app vẫn chạy thay vì báo lỗi cho người dùng.
+function buildModelChain(alias) {
+  const primary = resolveGeminiModel(alias);
+  if (primary === GEMINI_MODELS.pro) {
+    return [GEMINI_MODELS.pro, GEMINI_MODELS.flash, GEMINI_MODELS.flash];
+  }
+  return [primary, primary, primary];
+}
+
+// System instruction để câu trả lời ngắn gọn, đúng trọng tâm và trình bày đẹp.
+// Có chừa trường hợp prompt yêu cầu JSON thuần (không được chèn Markdown).
+const GENERATE_SYSTEM_INSTRUCTION = `Bạn là trợ lý AI bán hàng bất động sản cho người Việt.
+- Luôn trả lời bằng tiếng Việt, đi thẳng vào trọng tâm, súc tích. Không lan man, không lặp lại đề bài, không "rào trước đón sau".
+- Khi nội dung có nhiều ý, trình bày bằng Markdown gọn gàng để dễ đọc: tiêu đề mục ngắn dạng **in đậm**, gạch đầu dòng "-", hoặc danh sách đánh số "1." khi cần.
+- Ưu tiên nội dung thực chiến, áp dụng được ngay; bỏ phần lý thuyết dài dòng.
+- QUY TẮC BẮT BUỘC: Nếu người dùng yêu cầu trả về JSON thuần (hoặc "không markdown"), thì CHỈ xuất đúng JSON đó, tuyệt đối không thêm Markdown, lời dẫn hay giải thích nào.`;
+
 // Endpoint for general text generation (Zalo scripts, icebreakers, competitor analysis, etc.)
 app.post('/api/gemini/generate', authenticateToken, async (req, res) => {
   // Check and increment request count
@@ -631,8 +660,8 @@ app.post('/api/gemini/generate', authenticateToken, async (req, res) => {
     saveUsers(users);
   }
 
-  const { prompt } = req.body;
-  
+  const { prompt, model } = req.body;
+
   if (!prompt) {
     return res.status(400).json({ error: 'Prompt is required' });
   }
@@ -642,30 +671,42 @@ app.post('/api/gemini/generate', authenticateToken, async (req, res) => {
     return res.status(500).json({ error: 'Server is missing GEMINI_API_KEY configuration' });
   }
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+  const modelChain = buildModelChain(model);
+  // Giới hạn token "suy nghĩ" để kiểm soát chi phí: Pro ~1024 (giữ chất lượng mà ghìm giá ~250đ/lượt),
+  // Flash tắt thinking (0) cho nhanh & rẻ ở các tác vụ nhẹ.
+  const usePro = resolveGeminiModel(model) === GEMINI_MODELS.pro;
   const payload = {
-    contents: [{ parts: [{ text: prompt }] }]
+    systemInstruction: { parts: [{ text: GENERATE_SYSTEM_INSTRUCTION }] },
+    contents: [{ parts: [{ text: prompt }] }],
+    generationConfig: {
+      temperature: 0.7,
+      topP: 0.95,
+      maxOutputTokens: 4096,
+      thinkingConfig: { thinkingBudget: usePro ? 1024 : 0 }
+    }
   };
 
   const delays = [1000, 2000, 4000];
   for (let i = 0; i < delays.length; i++) {
+    const modelName = modelChain[i];
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
     try {
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(`Gemini API returned status ${response.status}: ${errorText}`);
       }
-      
+
       const json = await response.json();
       const text = json.candidates?.[0]?.content?.parts?.[0]?.text || 'Không có phản hồi từ AI.';
       return res.json({ text });
     } catch (err) {
-      console.error(`Attempt ${i+1} failed:`, err.message);
+      console.error(`Attempt ${i+1} (${modelName}) failed:`, err.message);
       if (i === delays.length - 1) {
         return res.status(500).json({ error: 'Lỗi API Gemini: ' + err.message });
       }
@@ -688,7 +729,7 @@ app.post('/api/gemini/chat', authenticateToken, async (req, res) => {
     saveUsers(users);
   }
 
-  const { systemPrompt, history } = req.body;
+  const { systemPrompt, history, model } = req.body;
 
   if (!history || !Array.isArray(history)) {
     return res.status(400).json({ error: 'History array is required' });
@@ -699,17 +740,26 @@ app.post('/api/gemini/chat', authenticateToken, async (req, res) => {
     return res.status(500).json({ error: 'Server is missing GEMINI_API_KEY configuration' });
   }
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+  const modelChain = buildModelChain(model);
+  const usePro = resolveGeminiModel(model) === GEMINI_MODELS.pro;
   const payload = {
     systemInstruction: systemPrompt ? { parts: [{ text: systemPrompt }] } : undefined,
     contents: history.map(msg => ({
       role: msg.role,
       parts: [{ text: msg.text }]
-    }))
+    })),
+    generationConfig: {
+      temperature: 0.85,
+      topP: 0.95,
+      maxOutputTokens: 1024,
+      thinkingConfig: { thinkingBudget: usePro ? 1024 : 0 }
+    }
   };
 
   const delays = [1000, 2000, 4000];
   for (let i = 0; i < delays.length; i++) {
+    const modelName = modelChain[i];
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
     try {
       const response = await fetch(url, {
         method: 'POST',
@@ -726,7 +776,7 @@ app.post('/api/gemini/chat', authenticateToken, async (req, res) => {
       const text = json.candidates?.[0]?.content?.parts?.[0]?.text || 'Không có phản hồi từ AI.';
       return res.json({ text });
     } catch (err) {
-      console.error(`Attempt ${i+1} failed:`, err.message);
+      console.error(`Attempt ${i+1} (${modelName}) failed:`, err.message);
       if (i === delays.length - 1) {
         return res.status(500).json({ error: 'Lỗi API Gemini: ' + err.message });
       }
