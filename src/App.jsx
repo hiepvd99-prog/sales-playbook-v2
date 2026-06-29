@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   BookOpen, ListOrdered, Users,
-  Target, CheckCircle, Edit3, Save, Layout,
+  Target, CheckCircle, Edit3, Layout,
   MapPin, MessageCircle, AlertCircle,
   Phone, Bot, Wand2, X, Loader2, Sparkles, UserPlus, FileText,
   MessageSquareQuote, Send, Smartphone, TrendingUp, Lightbulb,
@@ -450,7 +450,6 @@ function App() {
   const [adminError, setAdminError] = useState('');
 
   const [activeTab, setActiveTab] = useState('soTayCaNhan');
-  const [isEditing, setIsEditing] = useState(false);
   const [data, setData] = useState(defaultData);
 
   const navBtnRefs = useRef({});
@@ -810,6 +809,10 @@ function App() {
   const [roiSell, setRoiSell] = useState(2800000000);
   const [roiFeeRate, setRoiFeeRate] = useState(2);
   const [roiResult, setRoiResult] = useState({ netProfit: 0, roiRate: 0, taxVal: 0 });
+
+  // Money input helpers: show thousand separators (3.000.000.000), parse back to a number
+  const fmtMoney = (n) => (n ? Number(n).toLocaleString('vi-VN') : '');
+  const parseMoney = (s) => Math.max(0, parseInt(String(s).replace(/\D/g, ''), 10) || 0);
 
   // Feng Shui states
   const [fengShuiYear, setFengShuiYear] = useState('1990');
@@ -1326,14 +1329,9 @@ Ví dụ:
     });
   };
 
-  const EditableField = ({ value, onChange, isTextArea = false, className = "" }) => {
-    if (!isEditing) return <div className={`whitespace-pre-wrap ${className}`}>{value}</div>;
-    return isTextArea ? (
-      <textarea className={`w-full p-2 border border-blue-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-800 ${className}`} value={value} onChange={e => onChange(e.target.value)} rows={3} />
-    ) : (
-      <input type="text" className={`w-full p-2 border border-blue-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-800 ${className}`} value={value} onChange={e => onChange(e.target.value)} />
-    );
-  };
+  const EditableField = ({ value, className = "" }) => (
+    <div className={`whitespace-pre-wrap ${className}`}>{value}</div>
+  );
 
   // Render inline Markdown: **đậm**, *nghiêng*/_nghiêng_, `code`. Màu chữ kế thừa từ thẻ cha.
   const renderInline = (str) => {
@@ -2755,7 +2753,7 @@ Ví dụ:
 
         {/* Tab Content 3: Máy tính BĐS */}
         {activeSoTayTab === 'calc' && (
-          <div className="bg-slate-900 border border-slate-800 p-5 rounded-xl shadow-sm space-y-6">
+          <div className="bds-calc bg-slate-900 border border-slate-800 p-5 rounded-xl shadow-sm space-y-6">
             {/* Sub-tab selection */}
             <div className="flex bg-slate-950 border border-slate-850 p-1 rounded-lg text-4xs font-bold gap-1 uppercase tracking-wider w-full">
               <button
@@ -2792,12 +2790,13 @@ Ví dụ:
                       <div className="space-y-1">
                         <label className="text-[8px] font-bold text-slate-400 uppercase tracking-wider block">Tổng giá trị BĐS (VND)</label>
                         <input
-                          type="number"
-                          value={loanPrice}
-                          onChange={(e) => setLoanPrice(Math.max(0, parseInt(e.target.value) || 0))}
+                          type="text"
+                          inputMode="numeric"
+                          value={fmtMoney(loanPrice)}
+                          onChange={(e) => setLoanPrice(parseMoney(e.target.value))}
                           className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-2xs text-slate-200 focus:outline-none"
                         />
-                        <span className="text-[9px] text-slate-500">Ví dụ: 3 tỷ VNĐ = 3,000,000,000</span>
+                        <span className="text-[9px] text-slate-500">Ví dụ: 3 tỷ VNĐ = 3.000.000.000</span>
                       </div>
                       
                       <div className="space-y-1">
@@ -2901,9 +2900,10 @@ Ví dụ:
                       <div className="space-y-1">
                         <label className="text-[8px] font-bold text-slate-400 uppercase tracking-wider block">Tổng giá trị BĐS (VNĐ)</label>
                         <input
-                          type="number"
-                          value={unitPriceTotal}
-                          onChange={(e) => setUnitPriceTotal(Math.max(0, parseInt(e.target.value) || 0))}
+                          type="text"
+                          inputMode="numeric"
+                          value={fmtMoney(unitPriceTotal)}
+                          onChange={(e) => setUnitPriceTotal(parseMoney(e.target.value))}
                           className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-2xs text-slate-200 focus:outline-none"
                         />
                       </div>
@@ -2962,9 +2962,10 @@ Ví dụ:
                       <div className="space-y-1">
                         <label className="text-[8px] font-bold text-slate-400 uppercase tracking-wider block">Giá mua vào ban đầu (VNĐ)</label>
                         <input
-                          type="number"
-                          value={roiPurchase}
-                          onChange={(e) => setRoiPurchase(Math.max(0, parseInt(e.target.value) || 0))}
+                          type="text"
+                          inputMode="numeric"
+                          value={fmtMoney(roiPurchase)}
+                          onChange={(e) => setRoiPurchase(parseMoney(e.target.value))}
                           className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-2xs text-slate-200 focus:outline-none"
                         />
                       </div>
@@ -2972,9 +2973,10 @@ Ví dụ:
                       <div className="space-y-1">
                         <label className="text-[8px] font-bold text-slate-400 uppercase tracking-wider block">Giá dự kiến bán ra (VNĐ)</label>
                         <input
-                          type="number"
-                          value={roiSell}
-                          onChange={(e) => setRoiSell(Math.max(0, parseInt(e.target.value) || 0))}
+                          type="text"
+                          inputMode="numeric"
+                          value={fmtMoney(roiSell)}
+                          onChange={(e) => setRoiSell(parseMoney(e.target.value))}
                           className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-2xs text-slate-200 focus:outline-none"
                         />
                       </div>
@@ -3745,7 +3747,7 @@ Ví dụ:
   };
 
   const renderAdmin = () => (
-    <div className="space-y-6 animate-fadeIn">
+    <div className="admin-panel space-y-6 animate-fadeIn">
       <div className="bg-amber-950/30 border-l-4 border-amber-500 p-4 rounded text-amber-400 text-sm font-medium">
         Chào mừng Quản trị viên <strong>{currentUser?.name || ''}</strong>. Đây là bảng điều khiển quản lý thành viên và quyền truy cập ứng dụng Sales Playbook.
       </div>
@@ -4146,7 +4148,7 @@ Ví dụ:
         )}
       </section>
 
-      <section>
+      <section className="rejections">
         <h3 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2 flex items-center"><AlertCircle className="mr-2 text-red-500" style={{width:20,height:20}}/> 14 Lý do từ chối (Thực tế)</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {data.khachHang.rejections.map((reason, idx) => (
@@ -5146,12 +5148,6 @@ Ví dụ:
         </nav>
 
         <div className="p-4 bg-slate-950 border-t border-slate-800/60">
-          <button onClick={() => { setIsEditing(!isEditing); setMobileMenuOpen(false); }}
-            className={`w-full flex items-center justify-center py-2.5 px-4 rounded-lg font-medium text-sm transition-all
-              ${isEditing ? 'bg-green-500 hover:bg-green-600 text-white shadow-lg' : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700'}`}>
-            {isEditing ? <><Save className="mr-2" style={{width:15,height:15}}/> Lưu thay đổi</> : <><Edit3 className="mr-2" style={{width:15,height:15}}/> Chỉnh sửa nội dung</>}
-          </button>
-          
           <button onClick={handleLogout}
             className="w-full mt-2 flex items-center justify-center py-2 px-4 rounded-lg font-bold text-xs bg-slate-900 hover:bg-red-950/50 text-red-400 border border-red-950/60 hover:border-red-900 transition-all">
             <UserMinus className="mr-1.5" style={{width:13,height:13}}/> Đăng xuất ({currentUser?.username || ''})
@@ -5183,19 +5179,6 @@ Ví dụ:
             </h2>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
-            {isEditing && (
-              <span className="hidden sm:inline bg-green-100 text-green-700 text-xs font-bold px-2.5 py-1 rounded-full border border-green-200 animate-pulse whitespace-nowrap">
-                Đang chỉnh sửa
-              </span>
-            )}
-            {/* Nút edit nhanh trên mobile (icon only) */}
-            <button
-              onClick={() => setIsEditing(!isEditing)}
-              className={`md:hidden p-2 rounded-lg transition-all
-                ${isEditing ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
-              {isEditing ? <Save style={{width:18,height:18}}/> : <Edit3 style={{width:18,height:18}}/>}
-            </button>
-
             {/* Nút Thông Báo */}
             <div style={{position:'relative'}}>
               <button
@@ -5217,8 +5200,8 @@ Ví dụ:
 
               {/* Notification Panel */}
               {showNotifications && (
-                <div style={{
-                  position:'absolute', top:'calc(100% + 10px)', right:0, width:360, maxHeight:480,
+                <div className="notif-panel" style={{
+                  maxHeight:480,
                   background:'#fff', borderRadius:16, boxShadow:'0 20px 60px rgba(0,0,0,0.18)',
                   border:'1px solid rgba(99,102,241,0.15)', zIndex:1000, overflow:'hidden',
                   display:'flex', flexDirection:'column'

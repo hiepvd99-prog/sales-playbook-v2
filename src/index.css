@@ -301,10 +301,21 @@ header {
   box-shadow: 0 1px 0 rgba(129,140,248,0.08), 0 4px 32px rgba(0,0,0,0.3) !important;
 }
 
-/* ── Gray/slate light backgrounds → luxury glass ── */
+/* ── Light pastel backgrounds → luxury glass ──
+   Covers every bg-*-50/100 surface (divs included, not just <section>s) so the
+   global light-text rules never land on a light surface and go chìm. amber-50 /
+   orange-50 keep their own tinted treatment below. */
 [class*="bg-gray-50"], [class*="bg-gray-100"],
 [class*="bg-slate-50"], [class*="bg-slate-100"],
-[class*="bg-blue-50"] {
+[class*="bg-blue-50"],
+[class~="bg-indigo-50"], [class*="bg-indigo-50/"],
+[class~="bg-sky-50"], [class~="bg-cyan-50"],
+[class~="bg-teal-50"], [class~="bg-emerald-50"],
+[class~="bg-green-50"], [class~="bg-lime-50"],
+[class~="bg-yellow-50"], [class~="bg-red-50"],
+[class~="bg-rose-50"], [class~="bg-pink-50"],
+[class~="bg-fuchsia-50"], [class~="bg-purple-50"],
+[class~="bg-violet-50"] {
   background: rgba(255,255,255,0.09) !important;
   backdrop-filter: blur(18px) saturate(160%) !important;
   -webkit-backdrop-filter: blur(18px) saturate(160%) !important;
@@ -393,32 +404,33 @@ input[type="text"]:not([class*="bg-"]), textarea:not([class*="bg-"]) {
   color: #e2e8f0 !important;
 }
 
-/* Telesale script card adjustments ── */
-[class*="bg-amber-50"] {
+/* Telesale script card adjustments ──
+   ~= (whole token) so bg-amber-500 badges/buttons aren't caught by bg-amber-50. */
+[class~="bg-amber-50"] {
   background: rgba(251,191,36,0.10) !important;
   border-color: rgba(251,191,36,0.22) !important;
 }
-[class*="bg-amber-50"] [class*="text-amber-900"],
-[class*="bg-amber-50"] [class*="text-amber-800"],
-[class*="bg-amber-50"] [class*="text-amber-700"] {
+[class~="bg-amber-50"] [class*="text-amber-900"],
+[class~="bg-amber-50"] [class*="text-amber-800"],
+[class~="bg-amber-50"] [class*="text-amber-700"] {
   color: #fde68a !important;
 }
-[class*="bg-amber-50"] [class*="text-gray-800"],
-[class*="bg-amber-50"] [class*="text-gray-700"],
-[class*="bg-amber-50"] div,
-[class*="bg-amber-50"] p,
-[class*="bg-amber-50"] span,
-[class*="bg-amber-50"] textarea {
+[class~="bg-amber-50"] [class*="text-gray-800"],
+[class~="bg-amber-50"] [class*="text-gray-700"],
+[class~="bg-amber-50"] div,
+[class~="bg-amber-50"] p,
+[class~="bg-amber-50"] span,
+[class~="bg-amber-50"] textarea {
   color: rgba(255,255,255,0.88) !important;
 }
 [class*="border-amber-200"] { border-color: rgba(251,191,36,0.20) !important; }
 
 /* 6 factors ── */
-[class*="bg-orange-50"] {
+[class~="bg-orange-50"] {
   background: rgba(249,115,22,0.10) !important;
   border-color: rgba(249,115,22,0.22) !important;
 }
-[class*="bg-orange-50"] *,
+[class~="bg-orange-50"] *,
 [class*="text-orange-800"],
 [class*="text-orange-700"],
 [class*="text-orange-600"] {
@@ -430,3 +442,43 @@ input[type="text"]:not([class*="bg-"]), textarea:not([class*="bg-"]) {
 }
 [contenteditable]::placeholder,
 textarea::placeholder { color: rgba(148,163,184,0.55) !important; }
+
+/* Notification panel: anchored to the bell on desktop, to the viewport on mobile */
+.notif-panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 360px;
+}
+@media (max-width: 480px) {
+  .notif-panel {
+    position: fixed;
+    top: 62px;
+    left: 12px;
+    right: 12px;
+    width: auto;
+  }
+}
+/* White panel on a dark theme: keep notification text dark/readable
+   (overrides the global `p { color: light }` !important rule above) */
+.notif-panel p { color: #4b5563 !important; }
+.notif-panel li, .notif-panel small { color: #6b7280 !important; }
+
+/* Admin table sits on a dark-glass surface; the global light-text rules dim the
+   gray Tailwind classes too much. Brighten them (colored badges keep their hue). */
+.admin-panel th,
+.admin-panel .text-gray-600,
+.admin-panel .text-gray-700 { color: #e2e8f0 !important; }
+.admin-panel .text-gray-800,
+.admin-panel .text-slate-800 { color: #f8fafc !important; }
+.admin-panel .text-gray-500 { color: #cbd5e1 !important; }
+.admin-panel .text-gray-400 { color: #9aa7b8 !important; }
+
+/* Real-estate calculator (Máy tính BĐS): input labels are only 8px, hard to read.
+   Enlarge them and give the value fields a bit more presence. */
+.bds-calc label { font-size: 11px !important; letter-spacing: 0.04em; line-height: 1.4; }
+.bds-calc input { font-size: 15px !important; font-weight: 600; }
+
+/* "14 Lý do từ chối": cards now ride on dark glass (converted above), so the
+   global light-pastel text rules already give readable red/purple. The AI quote
+   inside bg-purple-100 inherits the global light <p> color. */
